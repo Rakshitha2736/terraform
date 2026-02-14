@@ -1,28 +1,26 @@
-pipeline {
+pipeline{
     agent any
-
+    parameters {
+        string(name: 'AMI_ID', defaultValue: 'ami-0b6c6ebed2801a5cb', description: 'Amazon Machine Image (AMI) ID to use for the EC2 instance')
+        string(name: 'AWS_CREDENTIALS_ID', defaultValue: 'aws-jenkins-creds', description: 'Jenkins AWS credentials ID')
+    }
     stages {
-        stage('Checkout') {
+        stage('source code') {
             steps {
-                git branch: 'main', url: 'https://github.com/Rakshitha2736/terraform'
+                echo 'Cloning...'
+                   git branch: 'main', url: 'https://github.com/PV-Sudarsan/task-jenkins.git'
+
             }
         }
-
-        stage('Terraform Init') {
+        stage('terraform') {
             steps {
-                sh 'terraform init'
-            }
-        }
-
-        stage('Terraform Plan') {
-            steps {
-                sh 'terraform plan'
-            }
-        }
-
-        stage('Terraform Apply') {
-            steps {
-                sh 'terraform apply -auto-approve'
+                echo 'Deploying...'
+                sh '[ -n "${AMI_ID}" ] || (echo "AMI_ID is required" && exit 1)'
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: params.AWS_CREDENTIALS_ID]]) {
+                    sh 'terraform init'
+                    sh "terraform plan -var=\"ami_id=${params.AMI_ID}\""
+                    sh "terraform apply -var=\"ami_id=${params.AMI_ID}\" -auto-approve"
+                }
             }
         }
     }
