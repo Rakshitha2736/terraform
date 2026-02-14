@@ -24,7 +24,7 @@ data "aws_vpc" "default" {
 }
 
 # ----------------------
-# Get Subnet in Supported AZ (us-east-1a)
+# Get Subnet in Supported AZ
 # ----------------------
 data "aws_subnet" "selected" {
   filter {
@@ -38,6 +38,18 @@ data "aws_subnet" "selected" {
   }
 }
 
+# ----------------------
+# Get Latest Amazon Linux 2 AMI
+# ----------------------
+data "aws_ami" "amazon_linux" {
+  most_recent = true
+  owners      = ["amazon"]
+
+  filter {
+    name   = "name"
+    values = ["amzn2-ami-hvm-*-x86_64-gp2"]
+  }
+}
 
 # ----------------------
 # Security Group
@@ -79,7 +91,7 @@ resource "aws_security_group" "ec2_sg" {
 # EC2 Instance
 # ----------------------
 resource "aws_instance" "ec2" {
-  ami                         = var.ami_id
+  ami                         = data.aws_ami.amazon_linux.id
   instance_type               = var.instance_type
   subnet_id                   = data.aws_subnet.selected.id
   vpc_security_group_ids      = [aws_security_group.ec2_sg.id]
@@ -90,4 +102,3 @@ resource "aws_instance" "ec2" {
     Name = "terraform-ec2"
   }
 }
-
