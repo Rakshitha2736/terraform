@@ -26,7 +26,7 @@ data "aws_vpc" "default" {
 # ----------------------
 # Get Subnet in Supported AZ (us-east-1a)
 # ----------------------
-data "aws_subnets" "default_in_vpc" {
+data "aws_subnet" "selected" {
   filter {
     name   = "vpc-id"
     values = [data.aws_vpc.default.id]
@@ -34,9 +34,10 @@ data "aws_subnets" "default_in_vpc" {
 
   filter {
     name   = "availability-zone"
-    values = ["us-east-1a"]   # Supported AZ
+    values = ["us-east-1a"]
   }
 }
+
 
 # ----------------------
 # Security Group
@@ -80,7 +81,7 @@ resource "aws_security_group" "ec2_sg" {
 resource "aws_instance" "ec2" {
   ami                         = var.ami_id
   instance_type               = var.instance_type
-  subnet_id                   = data.aws_subnets.default_in_vpc.ids[0]
+  subnet_id                   = data.aws_subnet.selected.id
   vpc_security_group_ids      = [aws_security_group.ec2_sg.id]
   associate_public_ip_address = true
   key_name                    = var.existing_key_pair_name
@@ -89,3 +90,4 @@ resource "aws_instance" "ec2" {
     Name = "terraform-ec2"
   }
 }
+
