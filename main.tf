@@ -55,7 +55,7 @@ data "aws_ami" "amazon_linux" {
 # Security Group
 # ----------------------
 resource "aws_security_group" "ec2_sg" {
-  name        = "terraform-ec2-sg"
+  name        = "terraform-ec2-sg-v2"
   description = "Allow SSH and HTTP"
   vpc_id      = data.aws_vpc.default.id
 
@@ -83,7 +83,7 @@ resource "aws_security_group" "ec2_sg" {
   }
 
   tags = {
-    Name = "terraform-ec2-sg"
+    Name = "terraform-ec2-sg-v2"
   }
 }
 
