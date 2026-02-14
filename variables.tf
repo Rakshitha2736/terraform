@@ -1,24 +1,22 @@
 variable "aws_region" {
-  type    = string
-  default = "us-east-1"
+  description = "AWS Region"
+  type        = string
+  default     = "us-east-1"
 }
-variable "instance_type" {
-  type    = string
-  default = "t3.micro"
-}
-variable "ami_id" {
-  type = string
 
-  validation {
-    condition     = length(trimspace(var.ami_id)) > 0
-    error_message = "ami-0b6c6ebed2801a5cb"
-  }
+variable "instance_type" {
+  description = "EC2 Instance Type"
+  type        = string
+  default     = "t3.micro"
 }
-variable "existing_key_pair_name" {
-  type    = string
-  default = "devops"
-}
+
 variable "allowed_ssh_cidr" {
-  type    = string
-  default = "0.0.0.0/0"
+  description = "Allowed IP for SSH"
+  type        = string
+  default     = "0.0.0.0/0"
+}
+
+variable "existing_key_pair_name" {
+  description = "Existing AWS Key Pair Name"
+  type        = string
 }
