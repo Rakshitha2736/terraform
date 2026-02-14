@@ -24,30 +24,31 @@ data "aws_vpc" "default" {
 }
 
 # ----------------------
-# Get Subnet in Supported AZ
+# Get One Public Subnet Automatically
+# (No hardcoded AZ to avoid mapping issues)
 # ----------------------
-data "aws_subnet" "selected" {
+data "aws_subnets" "default" {
   filter {
     name   = "vpc-id"
     values = [data.aws_vpc.default.id]
   }
+}
 
-  filter {
-    name   = "availability-zone"
-    values = ["us-east-1a"]
-  }
+data "aws_subnet" "selected" {
+  id = data.aws_subnets.default.ids[0]
 }
 
 # ----------------------
-# Get Latest Amazon Linux 2 AMI
+# Get Latest Amazon Linux 2 ARM AMI
+# (Required for t4g.micro)
 # ----------------------
-data "aws_ami" "amazon_linux" {
+data "aws_ami" "amazon_linux_arm" {
   most_recent = true
   owners      = ["amazon"]
 
   filter {
     name   = "name"
-    values = ["amzn2-ami-hvm-*-x86_64-gp2"]
+    values = ["amzn2-ami-hvm-*-arm64-gp2"]
   }
 }
 
@@ -55,7 +56,7 @@ data "aws_ami" "amazon_linux" {
 # Security Group
 # ----------------------
 resource "aws_security_group" "ec2_sg" {
-  name        = "terraform-ec2-sg-v2"
+  name        = "terraform-ec2-sg-v3"
   description = "Allow SSH and HTTP"
   vpc_id      = data.aws_vpc.default.id
 
@@ -83,7 +84,7 @@ resource "aws_security_group" "ec2_sg" {
   }
 
   tags = {
-    Name = "terraform-ec2-sg-v2"
+    Name = "terraform-ec2-sg-v3"
   }
 }
 
@@ -91,7 +92,7 @@ resource "aws_security_group" "ec2_sg" {
 # EC2 Instance
 # ----------------------
 resource "aws_instance" "ec2" {
-  ami                         = data.aws_ami.amazon_linux.id
+  ami                         = data.aws_ami.amazon_linux_arm.id
   instance_type               = var.instance_type
   subnet_id                   = data.aws_subnet.selected.id
   vpc_security_group_ids      = [aws_security_group.ec2_sg.id]
